@@ -12,10 +12,25 @@ public class Server {
 
     public static void main(String args[]) throws Exception {
 
-	InetAddress ip = Inet6Address.getByName(args[0]);
-	System.out.println("Wanted IPv6:" + ip.toString());
+	if (args.length != 3) {
+            System.err.println("Three arguments needed, e.g. [IP version] [IP address] [port]");
+            System.exit(-1);
+        }
 
-        try (ServerSocket serverSocket = new ServerSocket(8080, -1, ip)) {
+        InetAddress ip;
+        
+        if (args[0].equals("4")) {
+            System.setProperty("java.net.preferIPv4Stack", "true"); // optional
+            ip = InetAddress.getByName(args[1]);
+        }
+        else {
+            System.setProperty("java.net.preferIPv4Stack", "false");
+            ip = Inet6Address.getByName(args[1]);
+        }
+
+	System.out.println("IP: " + ip.toString());
+
+        try (ServerSocket serverSocket = new ServerSocket(Integer.parseInt(args[2]), -1, ip)) {
 
             String line;
             String content = "Hello World!";
@@ -26,6 +41,7 @@ public class Server {
                 Socket socket = serverSocket.accept();
 
                 // read request - optional
+                System.out.println("--");
                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 while ((line = in.readLine()) != null && !line.isEmpty()) {
                     System.out.println(line);
